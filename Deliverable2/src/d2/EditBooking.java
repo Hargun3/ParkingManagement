@@ -1,6 +1,7 @@
 package d2;
 
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import com.csvreader.CsvReader;
@@ -13,7 +14,7 @@ public class EditBooking implements Command{
 	private ParkingSpace oldSpace;
 	
 	@Override
-	public boolean execute() {
+	public boolean execute() throws IOException {
 		oldSpace = booking.getBookedSpace();
 		booking.setBookedSpace(newSpace);
 		CsvReader reader = new CsvReader("booking.csv");
@@ -26,7 +27,7 @@ public class EditBooking implements Command{
 		for (String[] entry: list) {
 			output.write(entry[0]);
 			output.write(entry[1]);
-			if (entry[2] == oldSpace) {
+			if (entry[2] == oldSpace.getspace_Location()) {
 				output.write(newSpace.getspace_Location());
 			} else {
 				output.write(entry[2]);
@@ -38,7 +39,7 @@ public class EditBooking implements Command{
 	}
 	
 	@Override
-	public boolean undo() {
+	public boolean undo() throws IOException {
 		booking.setBookedSpace(oldSpace);
 		CsvReader reader = new CsvReader("booking.csv");
 		ArrayList<String[]> list = new ArrayList<>();
@@ -50,7 +51,7 @@ public class EditBooking implements Command{
 		for (String[] entry: list) {
 			output.write(entry[0]);
 			output.write(entry[1]);
-			if (entry[2] == newSpace.getspae_Location()) {
+			if (entry[2] == newSpace.getspace_Location()) {
 				output.write(oldSpace.getspace_Location());
 			} else {
 				output.write(entry[2]);
@@ -59,7 +60,6 @@ public class EditBooking implements Command{
 			output.close();
 		}
 		return true;
-
 	}
 	
 	

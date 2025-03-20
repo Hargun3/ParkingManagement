@@ -13,13 +13,14 @@ public class BookParking implements Command{
 	private ParkingSpace space;
 	
 	@Override
-	public boolean execute() {
+	public boolean execute() throws IOException {
 		CsvWriter output = new CsvWriter(new FileWriter("booking.csv", true), ',');
 		output.write(String.valueOf(booking.id));
 		output.write(booking.startTime.toString());
-		output.write(space.getSpace_Location);
+		output.write(space.getspace_Location());
 		output.endRecord();
 		output.close();
+		return true;
 	}
 	
 	@Override

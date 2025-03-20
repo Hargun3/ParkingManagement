@@ -50,11 +50,11 @@ public class CancelBooking implements Command{
 	}
 
 	@Override
-	public boolean undo() {
+	public boolean undo() throws IOException {
 		CsvWriter output = new CsvWriter(new FileWriter("booking.csv", true), ',');
 		output.write(String.valueOf(booking.id));
 		output.write(booking.startTime.toString());
-		output.write(booking.bookedSpace.space_Location);
+		output.write(booking.bookedSpace.getspace_Location());
 		output.endRecord();
 		output.close();
 		return true;
