@@ -17,4 +17,12 @@ public class Manager {
         System.out.println("Manager " + manager_Username + " logged out.");
     }
 
+	public String getUsername() {
+    	return manager_Username;
+    }
+    
+    public String getPassword() {
+    	return manager_Password;
+    }
+
 }
