@@ -188,7 +188,7 @@ public class GUI extends JFrame {
         bookingInfoLabel = new JLabel("", SwingConstants.CENTER);
         bookingInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
-        // ✅ Start a timer to auto-update the booking info label every 30 seconds
+        //  Start a timer to auto-update the booking info label every 30 seconds
         new javax.swing.Timer(30000, e -> updateBookingInfoLabel(bookingInfoLabel)).start();
 
         JButton bookParkingBtn = new JButton("Book Parking");
@@ -198,7 +198,7 @@ public class GUI extends JFrame {
         JButton payNowBtn = new JButton("Pay Now");
         payNowBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         payNowBtn.addActionListener(e -> handlePayment());
-        // 🔒 Disable the button if booking is already paid
+        //  Disable the button if booking is already paid
         if (currentUser.getBooking() != null && currentUser.getBooking().isPaid()) {
             payNowBtn.setEnabled(false);
             payNowBtn.setText("Already Paid ✅");
@@ -249,7 +249,7 @@ public class GUI extends JFrame {
                     ParkingSpace space = currentUser.getBooking().getBookedSpace();
                     space.setState(new VacantState(space));
 
-                    // ✅ Reset button color
+                    //  Reset button color
                     JPanel bookingPanel = (JPanel) mainPanel.getComponent(2);
                     for (Component comp : bookingPanel.getComponents()) {
                         if (comp instanceof JPanel) {
@@ -430,7 +430,7 @@ public class GUI extends JFrame {
                         booking.setId(bookingId);
                         Date start = new Date();
                         booking.setStartTime(start);
-                        // ✅ Set end time to 1 hour later by default
+                        //  Set end time to 1 hour later by default
                         booking.setExitTime(new Date(start.getTime() + 60L * 60 * 1000));
 
                         booking.setBookedSpace(space);
@@ -533,7 +533,7 @@ public class GUI extends JFrame {
         
             JOptionPane.showMessageDialog(this, receipt, "🧾 Receipt", JOptionPane.INFORMATION_MESSAGE);
         
-            b.setPaid(true); // ✅ mark booking as paid
+            b.setPaid(true); //  mark booking as paid
         }        
          else {
             JOptionPane.showMessageDialog(this, "❌ Payment failed. Invalid credentials.", "Payment", JOptionPane.ERROR_MESSAGE);
@@ -604,7 +604,7 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                 String storedRole = reader.get("role").trim();
                 String status = reader.get("status").trim();
 
-                // ✅ Superadmin check
+                //  Superadmin check
                 if (storedEmail.equals(email) && storedPassword.equals(password)
                         && storedRole.equalsIgnoreCase("SuperManager")
                         && status.equalsIgnoreCase("approved")) {
@@ -646,7 +646,7 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                     };
                 }
 
-                // ✅ Manager check
+                //  Manager check
                 if (storedEmail.equals(email) && storedPassword.equals(password)
                         && storedRole.equalsIgnoreCase("Manager")
                         && status.equalsIgnoreCase("approved")) {
@@ -691,7 +691,7 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
 
             reader.close();
 
-            // ✅ Then check normal users
+            //  Then check normal users
             Client[] users = {
                     new Student(),
                     new Faculty(),

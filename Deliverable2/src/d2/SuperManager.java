@@ -17,7 +17,7 @@ public class SuperManager {
         return instance;
     }
 
-    public Set<Manager> accessAccountGenerator(AccountGenerator accountGenerator) throws Exception {
+    public Set<Manager> accessAccountGenerator(AccountGenerator accountGenerator) {
     	this.allManagers = accountGenerator.accessForSuperManager(this);
         return allManagers;
     }
