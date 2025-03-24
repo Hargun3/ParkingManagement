@@ -94,4 +94,5 @@ public class Manager implements Client {
     public void initiatePayment() {
         // Not applicable
     }
+
 }

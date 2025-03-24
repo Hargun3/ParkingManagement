@@ -1,10 +1,15 @@
 package d2;
+import java.io.FileWriter;
+import java.util.List;
+import com.csvreader.CsvWriter;
 
 public class ParkingSpace {
     private ParkingSpaceState state;
     private int space_ID;
     private ParkingLot space_Lot;
     private String space_Location;
+    private static final String CSV_FILE = "parking_spaces.csv";
+    private static boolean headerWritten = false;
     
     
     public int getSpace_ID() {
@@ -42,6 +47,11 @@ public class ParkingSpace {
         this.space_Lot = space_Lot;
         this.space_Location = space_Location;
         this.state = new VacantState(this);  
+	try {
+            writeToCSV(); 
+        } catch (Exception e) {
+            System.out.println("Failed to write parking space into CSV: " + e.getMessage());
+        }
     }
 
     public void enable() {
@@ -66,5 +76,24 @@ public class ParkingSpace {
 
     public ParkingSpaceState getState() {
         return state;
+    }
+
+private void writeToCSV() throws Exception {
+        boolean fileExists = new File(CSV_FILE).exists();
+        CsvWriter writer = new CsvWriter(new FileWriter(CSV_FILE, true), ',');
+        if (!fileExists || !headerWritten) {
+            writer.write("LotName");
+            writer.write("SpaceID");
+            writer.write("Location");
+            writer.write("State");
+            writer.endRecord();
+            headerWritten = true;
+        }
+        writer.write(space_Lot.getLotName());
+        writer.write(String.valueOf(space_ID));
+        writer.write(space_Location);
+        writer.write(state.getClass().getSimpleName());
+        writer.endRecord();
+        writer.close();
     }
 }
