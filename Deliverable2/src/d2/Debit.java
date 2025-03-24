@@ -25,7 +25,7 @@ public class Debit implements PaymentMethod{
 	}
 	
 	private void getCardDetails(int card_Number, Date card_expDate, int card_CVV) throws IOException {
-		CsvWriter output = new CsvWriter(new FileWriter("cards.csv", true), ',');
+		CsvWriter output = new CsvWriter(new FileWriter("Deliverable2/cards.csv", true), ',');
 		output.write(String.valueOf(card_Number));
 		output.write(card_expDate.toString());
 		output.write(String.valueOf(card_CVV));

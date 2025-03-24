@@ -1,151 +1,164 @@
 package d2;
 
-import java.io.FileWriter;
-import java.io.IOException;
-
 import com.csvreader.CsvReader;
 import com.csvreader.CsvWriter;
 
-public class Staff implements Client{
-	
-	private int id;
-	private String email;
-	private String password;
-	private String licensePlate;
-	private Booking booking;
-	private PaymentMethod method;
-	private Double rate = 10.0;
-	
-	
-	
-	public int getId() {
-		return id;
-	}
+import java.io.FileWriter;
+import java.io.IOException;
 
+public class Staff implements Client {
+    private int id;
+    private String email;
+    private String password;
+    private Booking booking;
+    private final Double rate = 10.0; // Staff parking rate
 
+    public int getId() {
+        return id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
+    @Override
+    public String getEmail() {
+        return email;
+    }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-	public String getEmail() {
-		return email;
-	}
+    public String getPassword() {
+        return password;
+    }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
+    @Override
+    public double getRate() {
+        return rate;
+    }
 
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    @Override
+    public Booking getBooking() {
+        return booking;
+    }
 
+    @Override
+    public void setBooking(Booking booking) {
+        this.booking = booking;
+    }
 
+    @Override
+    public boolean login(String email, String password) throws NumberFormatException, IOException {
+        CsvReader reader = null;
+        try {
+            reader = new CsvReader("Deliverable2/user.csv");
+            reader.readHeaders();
 
-	public String getLicensePlate() {
-		return licensePlate;
-	}
+            while (reader.readRecord()) {
+                String storedEmail = reader.get("email").trim();
+                String storedPassword = reader.get("password").trim();
+                String storedRole = reader.get("role").trim();
+                String status = reader.get("status").trim();
+                String storedId = reader.get("id").trim();
 
+                System.out.println("Checking user: " + storedEmail + " | Role: " + storedRole + " | Status: " + status);
+                System.out.println("Input Email: " + email + " | Input Password: " + password);
 
+                if (!status.equalsIgnoreCase("approved") &&
+                        (storedRole.equalsIgnoreCase("Student") || storedRole.equalsIgnoreCase("Faculty")
+                                || storedRole.equalsIgnoreCase("Staff"))) {
+                    if (!storedRole.equalsIgnoreCase("SuperManager")) {
+                        System.out.println("? Account not yet approved by management.");
+                        return false;
+                    }
+                }
 
-	public void setLicensePlate(String licensePlate) {
-		this.licensePlate = licensePlate;
-	}
+                if (storedEmail.equals(email) && storedPassword.equals(password)) {
+                    System.out.println(
+                            "✅ Login successful for: " + email + " (ID: " + storedId + ", Role: " + storedRole + ")");
+                    this.email = email;
+                    this.password = password;
+                    this.id = Integer.parseInt(storedId);
+                    return true;
+                }
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
 
+        System.out.println("❌ Invalid login attempt.");
+        return false;
+    }
 
+    @Override
+    public boolean register(String email, String password, int id) throws NumberFormatException, IOException {
+        if (!password.matches("(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!]).+")) {
+            System.out.println("❌ Weak password. Registration failed.");
+            return false;
+        }
 
-	public Booking getBooking() {
-		return booking;
-	}
+        CsvReader reader = null;
+        boolean userExists = false;
 
+        try {
+            reader = new CsvReader("Deliverable2/user.csv");
+            while (reader.readRecord() && !reader.get("id").isEmpty()) {
+                if (reader.get("id").equals(String.valueOf(id)) || reader.get("email").equals(email)) {
+                    userExists = true;
+                    break;
+                }
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
 
+        if (userExists) {
+            System.out.println("❌ ID or email already exists. Registration failed.");
+            return false;
+        }
 
-	public void setBooking(Booking booking) {
-		this.booking = booking;
-	}
+        CsvWriter output = null;
+        try {
+            output = new CsvWriter(new FileWriter("Deliverable2/user.csv", true), ',');
+            output.write(String.valueOf(id));
+            output.write(email);
+            output.write(password);
+            output.write("Staff");
+            output.write("pending");
+            output.endRecord();
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
 
+        System.out.println("✅ Registration successful for: " + email);
+        return true;
+    }
 
+    @Override
+    public boolean logout() {
+        System.out.println("✅ User " + email + " logged out.");
+        return true;
+    }
 
-	public PaymentMethod getMethod() {
-		return method;
-	}
+    @Override
+    public void initiateBooking() {
+        this.booking = new Booking();
+    }
 
-
-
-	public void setMethod(PaymentMethod method) {
-		this.method = method;
-	}
-
-
-
-	public double getRate() {
-		return rate;
-	}
-
-
-	public String getPassword() {
-		return password;
-	}
-
-
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-
-
-	public boolean register(String email, String password, int id) throws NumberFormatException, IOException {
-		// add managment validate
-		CsvReader reader = new CsvReader("user.csv"); 
-		Staff staff = new Staff();
-		if (password.matches("(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@#$%^&+=!]).+") == false) {
-			return false;
-		}
-		while(reader.readRecord() && reader.get("id") != ""){ 
-			//name,id,email,password
-			staff.setId(Integer.valueOf(reader.get("id")));
-			staff.setEmail(reader.get("email"));
-			staff.setPassword(reader.get("password"));
-			if (staff.getId() == id || staff.getEmail() == email) {
-				return false;
-			} 
-		}
-		CsvWriter output = new CsvWriter(new FileWriter("user.csv", true), ',');
-		output.write(String.valueOf(id));
-		output.write(email);
-		output.write(password);
-		output.endRecord();
-		output.close();
-		return true;
-	}
-	
-	public boolean login(String email, String password) throws NumberFormatException, IOException {
-		CsvReader reader = new CsvReader("user.csv"); 
-		Staff staff = new Staff();
-		while(reader.readRecord() && reader.get("id") != ""){ 
-			//name,id,email,password
-			staff.setId(Integer.valueOf(reader.get("id")));
-			staff.setEmail(reader.get("email"));
-			staff.setPassword(reader.get("password"));
-			if (staff.getEmail() == email && staff.getPassword() == password) {
-				return true;
-			} 
-		}
-		return false;
-		
-	}
-	
-	public boolean logout() {
-		return true;
-	}
-
-	public void initiateBooking() {
-		Booking booking = new Booking();
-	}
-	
-	public void initiatePayment() {
-		Payment payment = new Payment();
-	}
-
+    @Override
+    public void initiatePayment() {
+        Payment payment = new Payment();
+    }
 }

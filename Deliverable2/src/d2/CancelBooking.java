@@ -30,7 +30,7 @@ public class CancelBooking implements Command{
 		if (currentDate.getTime() <= booking.getStartTime().getTime()) {
 			return false;
 		}
-		CsvReader reader = new CsvReader("booking.csv");
+		CsvReader reader = new CsvReader("Deliverable2/booking.csv");
 		ArrayList<String[]> list = new ArrayList<>();
 		while(reader.readRecord() && reader.get("id") != ""){ 
 			if (booking.getId() != Integer.valueOf(reader.get("id"))) {
@@ -38,7 +38,7 @@ public class CancelBooking implements Command{
 				list.add(temp);
 			} 
 		}
-		CsvWriter output = new CsvWriter(new FileWriter("booking.csv", false), ',');
+		CsvWriter output = new CsvWriter(new FileWriter("Deliverable2/booking.csv", false), ',');
 		for (String[] entry: list) {
 			output.write(entry[0]);
 			output.write(entry[1]);
@@ -51,7 +51,7 @@ public class CancelBooking implements Command{
 
 	@Override
 	public boolean undo() throws IOException {
-		CsvWriter output = new CsvWriter(new FileWriter("booking.csv", true), ',');
+		CsvWriter output = new CsvWriter(new FileWriter("Deliverable2/booking.csv", true), ',');
 		output.write(String.valueOf(booking.id));
 		output.write(booking.startTime.toString());
 		output.write(booking.bookedSpace.getspace_Location());

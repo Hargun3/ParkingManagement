@@ -9,7 +9,7 @@ import com.csvreader.CsvWriter;
 public class main {
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
-				CsvReader reader = new CsvReader("user.csv"); 
+				CsvReader reader = new CsvReader("Deliverable2\\user.csv"); 
 				Student student = new Student();
 				while(reader.readRecord() && reader.get("id") != ""){ 
 					//name,id,email,password
@@ -17,7 +17,7 @@ public class main {
 					student.setEmail(reader.get("email"));
 					student.setPassword(reader.get("password"));
 				}
-				CsvWriter output = new CsvWriter(new FileWriter("user.csv", true), ',');
+				CsvWriter output = new CsvWriter(new FileWriter("Deliverable2\\user.csv", true), ',');
 				output.write("test");
 				output.write("test");
 				output.write("test");

@@ -24,7 +24,7 @@ public class Paypal implements PaymentMethod{
 	}
 	
 	private void getPaypalAccount(String username, String password) throws IOException {
-		CsvWriter output = new CsvWriter(new FileWriter("paypals.csv", true), ',');
+		CsvWriter output = new CsvWriter(new FileWriter("Deliverable2/paypal.csv", true), ',');
 		output.write(username);
 		output.write(password);
 		output.endRecord();
