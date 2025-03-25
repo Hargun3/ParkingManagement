@@ -681,125 +681,132 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                 String storedRole = reader.get("role").trim();
                 String status = reader.get("status").trim();
 
-                //  Superadmin check
-                if (storedEmail.equals(email) && storedPassword.equals(password)
-                        && storedRole.equalsIgnoreCase("SuperManager")
-                        && status.equalsIgnoreCase("approved")) {
+                // Check if email and password match
+                if (storedEmail.equals(email) && storedPassword.equals(password)) {
+                    if (!status.equalsIgnoreCase("approved")) {
+                        JOptionPane.showMessageDialog(this, "⏳ Account not approved yet.", "Pending Approval", JOptionPane.WARNING_MESSAGE);
+                        return null;
+                    }
 
-                    System.out.println("✅ Superadmin login detected");
-                    return new Client() {
-                        public boolean login(String e, String p) {
-                            return true;
+                    // Handle Superadmin login
+                    if (storedRole.equalsIgnoreCase("SuperManager")) {
+                        System.out.println("✅ Superadmin login detected");
+                        return createSuperAdminClient(storedEmail);
+                    }
+
+                    // Handle Manager login
+                    if (storedRole.equalsIgnoreCase("Manager")) {
+                        System.out.println("✅ Manager login detected");
+                        return createManagerClient(storedEmail);
+                    }
+
+                    // Handle normal user login
+                    Client[] users = { new Student(), new Faculty(), new Staff(), new Visitor() };
+                    for (Client user : users) {
+                        if (user.login(email, password)) {
+                            Booking previousBooking = loadBookingFromCSV(email);
+                            if (previousBooking != null) {
+                                user.setBooking(previousBooking);
+                                updateParkingSpaceState(previousBooking);
+                            }
+                            return user;
                         }
-
-                        public boolean logout() {
-                            return true;
-                        }
-
-                        public String getEmail() {
-                            return storedEmail;
-                        }
-
-                        public double getRate() {
-                            return 0.0;
-                        }
-
-                        public Booking getBooking() {
-                            return null;
-                        }
-
-                        public void setBooking(Booking b) {
-                        }
-
-                        public void initiateBooking() {
-                        }
-
-                        public void initiatePayment() {
-                        }
-
-                        public boolean register(String e, String p, int id) {
-                            return false;
-                        }
-                    };
-                }
-
-                //  Manager check
-                if (storedEmail.equals(email) && storedPassword.equals(password)
-                        && storedRole.equalsIgnoreCase("Manager")
-                        && status.equalsIgnoreCase("approved")) {
-
-                    System.out.println("✅ Manager login detected");
-                    return new Client() {
-                        public boolean login(String e, String p) {
-                            return true;
-                        }
-
-                        public boolean logout() {
-                            return true;
-                        }
-
-                        public String getEmail() {
-                            return storedEmail;
-                        }
-
-                        public double getRate() {
-                            return 0.0;
-                        }
-
-                        public Booking getBooking() {
-                            return null;
-                        }
-
-                        public void setBooking(Booking b) {
-                        }
-
-                        public void initiateBooking() {
-                        }
-
-                        public void initiatePayment() {
-                        }
-
-                        public boolean register(String e, String p, int id) {
-                            return false;
-                        }
-                    };
+                    }
                 }
             }
 
             reader.close();
-
-            //  Then check normal users
-            Client[] users = {
-                    new Student(),
-                    new Faculty(),
-                    new Staff(),
-                    new Visitor()
-            };
-
-            for (Client user : users) {
-                if (user.login(email, password)) {
-                    Booking previousBooking = loadBookingFromCSV(email);
-                    if (previousBooking != null) {
-                        user.setBooking(previousBooking);
-                        for (ParkingSpace space : allSpaces) {
-                            if (space.getspace_Location().equals(previousBooking.getBookedSpace().getspace_Location())) {
-                                space.setState(new OccupiedState(space)); // color it red
-                                space.setBooking(previousBooking);        // 🧠 most important line
-                                break;
-                            }
-                        }
-                    
-                    }
-                    return user;
-                }
-            }
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return null;
     }
+
+    private Client createSuperAdminClient(String email) {
+        return new Client() {
+            public boolean login(String e, String p) {
+                return true;
+            }
+
+            public boolean logout() {
+                return true;
+            }
+
+            public String getEmail() {
+                return email;
+            }
+
+            public double getRate() {
+                return 0.0;
+            }
+
+            public Booking getBooking() {
+                return null;
+            }
+
+            public void setBooking(Booking b) {
+            }
+
+            public void initiateBooking() {
+            }
+
+            public void initiatePayment() {
+            }
+
+            public boolean register(String e, String p, int id) {
+                return false;
+            }
+        };
+    }
+
+    private Client createManagerClient(String email) {
+        return new Client() {
+            public boolean login(String e, String p) {
+                return true;
+            }
+
+            public boolean logout() {
+                return true;
+            }
+
+            public String getEmail() {
+                return email;
+            }
+
+            public double getRate() {
+                return 0.0;
+            }
+
+            public Booking getBooking() {
+                return null;
+            }
+
+            public void setBooking(Booking b) {
+            }
+
+            public void initiateBooking() {
+            }
+
+            public void initiatePayment() {
+            }
+
+            public boolean register(String e, String p, int id) {
+                return false;
+            }
+        };
+    }
+
+    private void updateParkingSpaceState(Booking booking) {
+        for (ParkingSpace space : allSpaces) {
+            if (space.getspace_Location().equals(booking.getBookedSpace().getspace_Location())) {
+                space.setState(new OccupiedState(space));
+                space.setBooking(booking);
+                break;
+            }
+        }
+    }
+
     private Booking loadBookingFromCSV(String email) {
         try {
             com.csvreader.CsvReader reader = new com.csvreader.CsvReader("Deliverable2/booking.csv");
