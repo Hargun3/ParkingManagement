@@ -104,6 +104,15 @@ public class Booking {
 	public void setRate(double rate) {
 		this.rate = rate;
 	}
+	private String email;
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
 
 	private boolean checkLicensePlate(String licensePlate) {
 		return licensePlate.matches("^[A-Z0-9]{1,7}(-| )?[A-Z0-9]{1,7}$");

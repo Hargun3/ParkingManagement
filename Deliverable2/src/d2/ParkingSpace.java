@@ -5,6 +5,7 @@ public class ParkingSpace {
     private int space_ID;
     private ParkingLot space_Lot;
     private String space_Location;
+    private Booking currentBooking;
     
     
     public int getSpace_ID() {
@@ -18,6 +19,14 @@ public class ParkingSpace {
 	public ParkingLot getSpace_Lot() {
 		return space_Lot;
 	}
+    public Booking getBooking() {
+        return currentBooking;
+    }
+    
+    public void setBooking(Booking booking) {
+        this.currentBooking = booking;
+    }
+    
 
 	public void setSpace_Lot(ParkingLot space_Lot) {
 		this.space_Lot = space_Lot;

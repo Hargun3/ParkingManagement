@@ -323,8 +323,20 @@ public class GUI extends JFrame {
     managerApprovalBtn.addActionListener(new ActionListener() {
         public void actionPerformed(ActionEvent e) {
             new ManagerApproval().setVisible(true);
+
+        }
+        
+    });
+
+    JButton viewStatusBtn = new JButton("📊 View Parking Lot Status");
+    viewStatusBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+    viewStatusBtn.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            new LotStatusWindow(allSpaces).setVisible(true);
         }
     });
+    panel.add(Box.createVerticalStrut(10));
+    panel.add(viewStatusBtn);
 
     JButton disableAllBtn = new JButton("Disable Entire Lot");
     disableAllBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -527,6 +539,7 @@ public class GUI extends JFrame {
         return panel;
     }
 
+    
     private void updateButtonState(ParkingSpace space, JButton button) {
         if (space.getState() instanceof VacantState) {
             button.setBackground(Color.GREEN);
@@ -768,6 +781,14 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                     Booking previousBooking = loadBookingFromCSV(email);
                     if (previousBooking != null) {
                         user.setBooking(previousBooking);
+                        for (ParkingSpace space : allSpaces) {
+                            if (space.getspace_Location().equals(previousBooking.getBookedSpace().getspace_Location())) {
+                                space.setState(new OccupiedState(space)); // color it red
+                                space.setBooking(previousBooking);        // 🧠 most important line
+                                break;
+                            }
+                        }
+                    
                     }
                     return user;
                 }
@@ -805,6 +826,7 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                     b.setBookedSpace(new ParkingSpace(new ParkingLot(lotName), fullSpaceId));                    
                     b.setLicensePlate(reader.get(3).trim());
                     b.setExitTime(new Date(b.getStartTime().getTime() + 60L * 60 * 1000)); // assume 1 hour
+                    b.setEmail(rowEmail); 
                     return b;
                 }
             }
@@ -847,6 +869,66 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
     private void updateBookingInfoLabelFromOutside() {
         if (bookingInfoLabel != null) {
             updateBookingInfoLabel(bookingInfoLabel);
+        }
+    }
+    public class LotStatusWindow extends JFrame {
+        public LotStatusWindow(ArrayList<ParkingSpace> allSpaces) {
+            setTitle("Live Lot Status");
+            setSize(900, 600);
+            setLocationRelativeTo(null);
+    
+            JTabbedPane tabbedPane = new JTabbedPane();
+    
+            String[] lotNames = {"North", "South", "East", "West"};
+    
+            for (final String lot : lotNames) {
+                JPanel grid = new JPanel(new GridLayout(10, 10, 5, 5));
+    
+                for (int i = 1; i <= 100; i++) {
+                    final String spaceId = lot.substring(0, 1).toUpperCase() + i;
+                    ParkingSpace space = findSpaceById(allSpaces, spaceId);
+    
+                    JButton btn = new JButton(spaceId);
+                    btn.setToolTipText(spaceId);
+    
+                    if (space.getState() instanceof DisabledState) {
+                        btn.setBackground(Color.DARK_GRAY);
+                        btn.setEnabled(false);
+                    } else if (space.getState() instanceof OccupiedState) {
+                        btn.setBackground(Color.RED);
+                        Booking booking = space.getBooking(); // You need to make sure each space has a reference to its booking
+    
+                        if (booking != null) {
+                            String info = "<html>Email: " + booking.getEmail()
+                                    + "<br>Plate: " + booking.getLicensePlate()
+                                    + "<br>Ends: " + booking.getExitTime() + "</html>";
+                                    btn.addActionListener(new ActionListener() {
+                                        public void actionPerformed(ActionEvent e) {
+                                            JOptionPane.showMessageDialog(LotStatusWindow.this, info, "Booking Info", JOptionPane.INFORMATION_MESSAGE);
+                                        }
+                                    });
+                                }
+                    } else {
+                        btn.setBackground(Color.GREEN);
+                        btn.setEnabled(false);
+                    }
+    
+                    grid.add(btn);
+                }
+    
+                tabbedPane.addTab(lot, grid);
+            }
+    
+            add(tabbedPane);
+        }
+    
+        private ParkingSpace findSpaceById(ArrayList<ParkingSpace> allSpaces, String id) {
+            for (ParkingSpace s : allSpaces) {
+                if (s.getspace_Location().equals(id)) {
+                    return s;
+                }
+            }
+            return null;
         }
     }
 

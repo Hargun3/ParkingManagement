@@ -34,6 +34,8 @@ public class BookParking implements Command {
                 output.close();
             }
         }
+        space.setBooking(booking);       // Link booking to space (used by manager sensor view)
+        booking.setEmail(userEmail);     // Store email in booking (useful for manager to view)
         return true;
     }
 
