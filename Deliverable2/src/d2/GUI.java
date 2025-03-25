@@ -4,6 +4,9 @@ import javax.swing.*;
 
 import com.csvreader.CsvReader;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,6 +18,7 @@ public class GUI extends JFrame {
     private JLabel dashboardLabel;
     private JLabel bookingInfoLabel;
     private ArrayList<ParkingSpace> allSpaces = new ArrayList<>();
+    private String[] lotNames = {"North", "South", "East", "West"}; // Define lot names
     
 
 
@@ -22,7 +26,7 @@ public class GUI extends JFrame {
 
     public GUI() {
         setTitle("Parking Management System");
-        setSize(400, 300);
+        setSize(600, 500); // Adjusted size for better layout
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -31,7 +35,11 @@ public class GUI extends JFrame {
 
         mainPanel.add(createLoginPanel(), "login");
         mainPanel.add(createRegisterPanel(), "register");
-        mainPanel.add(createBookingPanel(), "booking");
+
+        // Add separate booking panels for each lot
+        for (String lot : lotNames) {
+            mainPanel.add(createBookingPanel(lot), "booking_" + lot);
+        }
 
         add(mainPanel);
         cardLayout.show(mainPanel, "login");
@@ -189,11 +197,18 @@ public class GUI extends JFrame {
         bookingInfoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         //  Start a timer to auto-update the booking info label every 30 seconds
-        new javax.swing.Timer(30000, e -> updateBookingInfoLabel(bookingInfoLabel)).start();
+        new javax.swing.Timer(500, e -> updateBookingInfoLabel(bookingInfoLabel)).start();
 
         JButton bookParkingBtn = new JButton("Book Parking");
         bookParkingBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        bookParkingBtn.addActionListener(e -> cardLayout.show(mainPanel, "booking"));
+        bookParkingBtn.addActionListener(e -> {
+            String[] options = {"North", "South", "East", "West"};
+            String lot = (String) JOptionPane.showInputDialog(this, "Choose a lot:", "Select Lot",
+                    JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            if (lot != null) {
+                cardLayout.show(mainPanel, "booking_" + lot);
+            }
+        });
 
         JButton payNowBtn = new JButton("Pay Now");
         payNowBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -303,69 +318,137 @@ public class GUI extends JFrame {
         }
 
         if (isManager(currentUser.getEmail())) {
-            JButton managerApprovalBtn = new JButton("Manager Approval");
-            managerApprovalBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            managerApprovalBtn.addActionListener(e -> new ManagerApproval().setVisible(true));
-            JButton disableAllBtn = new JButton("Disable All Parking Spaces");
-            disableAllBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            disableAllBtn.addActionListener(e -> {
-                for (ParkingSpace space : allSpaces) {
+    JButton managerApprovalBtn = new JButton("Manager Approval");
+    managerApprovalBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+    managerApprovalBtn.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            new ManagerApproval().setVisible(true);
+        }
+    });
+
+    JButton disableAllBtn = new JButton("Disable Entire Lot");
+    disableAllBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+    disableAllBtn.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            String[] lotOptions = {"North", "South", "East", "West"};
+            String selectedLot = (String) JOptionPane.showInputDialog(
+                    GUI.this, "Choose a lot to disable:", "Lot Selection",
+                    JOptionPane.PLAIN_MESSAGE, null, lotOptions, lotOptions[0]);
+
+            if (selectedLot == null) return;
+
+            String lotPrefix = selectedLot.substring(0, 1).toUpperCase();
+
+            for (ParkingSpace space : allSpaces) {
+                if (space.getspace_Location().startsWith(lotPrefix)) {
                     space.setState(new DisabledState(space));
                 }
-                JOptionPane.showMessageDialog(this, "🚫 All spaces disabled.");
-            });
-        
-            JButton enableAllBtn = new JButton("Enable All Parking Spaces");
-            enableAllBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            enableAllBtn.addActionListener(e -> {
-                for (ParkingSpace space : allSpaces) {
+            }
+
+            JOptionPane.showMessageDialog(GUI.this, "🚫 All spaces in " + selectedLot + " disabled.");
+        }
+    });
+
+    JButton enableAllBtn = new JButton("Enable Entire Lot");
+    enableAllBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+    enableAllBtn.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            String[] lotOptions = {"North", "South", "East", "West"};
+            String selectedLot = (String) JOptionPane.showInputDialog(
+                    GUI.this, "Choose a lot to enable:", "Lot Selection",
+                    JOptionPane.PLAIN_MESSAGE, null, lotOptions, lotOptions[0]);
+
+            if (selectedLot == null) return;
+
+            String lotPrefix = selectedLot.substring(0, 1).toUpperCase();
+
+            for (ParkingSpace space : allSpaces) {
+                if (space.getspace_Location().startsWith(lotPrefix)) {
                     space.setState(new VacantState(space));
                 }
-                JOptionPane.showMessageDialog(this, "✅ All spaces enabled.");
-            });
-        
-            JButton toggleOneBtn = new JButton("Toggle Specific Space");
-            toggleOneBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-            toggleOneBtn.addActionListener(e -> {
-                String input = JOptionPane.showInputDialog(this, "Enter space number (1-100):");
-                try {
-                    int idx = Integer.parseInt(input) - 1;
-                    if (idx >= 0 && idx < allSpaces.size()) {
-                        ParkingSpace s = allSpaces.get(idx);
-                        if (s.getState() instanceof DisabledState) {
-                            s.setState(new VacantState(s));
-                        } else {
-                            s.setState(new DisabledState(s));
-                        }
-                        
-                        // Refresh buttons visually
-                        Component[] comps = ((JPanel) ((JPanel) mainPanel.getComponent(2)).getComponent(1)).getComponents();
-                        for (Component c : comps) {
-                            if (c instanceof JButton && ((JButton) c).getText().equals(s.getspace_Location())) {
-                                updateButtonState(s, (JButton) c);
-                                break;
+            }
+
+            JOptionPane.showMessageDialog(GUI.this, "✅ All spaces in " + selectedLot + " enabled.");
+        }
+    });
+
+    JButton toggleOneBtn = new JButton("Toggle Specific Space");
+    toggleOneBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+    toggleOneBtn.addActionListener(new ActionListener() {
+        public void actionPerformed(ActionEvent e) {
+            String[] lotOptions = {"North", "South", "East", "West"};
+            String selectedLot = (String) JOptionPane.showInputDialog(
+                    GUI.this, "Choose a lot:", "Lot Selection",
+                    JOptionPane.PLAIN_MESSAGE, null, lotOptions, lotOptions[0]);
+
+            if (selectedLot == null) return;
+
+            String spaceNumInput = JOptionPane.showInputDialog(GUI.this, "Enter space number (1-100):");
+            if (spaceNumInput == null) return;
+
+            try {
+                int spaceNum = Integer.parseInt(spaceNumInput.trim());
+                if (spaceNum < 1 || spaceNum > 100) {
+                    JOptionPane.showMessageDialog(GUI.this, "Invalid space number.");
+                    return;
+                }
+
+                String fullSpaceId = selectedLot.substring(0, 1).toUpperCase() + spaceNum;
+
+                ParkingSpace targetSpace = null;
+                for (ParkingSpace s : allSpaces) {
+                    if (s.getspace_Location().equals(fullSpaceId)) {
+                        targetSpace = s;
+                        break;
+                    }
+                }
+
+                if (targetSpace == null) {
+                    JOptionPane.showMessageDialog(GUI.this, "Space not found.");
+                    return;
+                }
+
+                if (targetSpace.getState() instanceof DisabledState) {
+                    targetSpace.setState(new VacantState(targetSpace));
+                } else {
+                    targetSpace.setState(new DisabledState(targetSpace));
+                }
+
+                for (Component comp : mainPanel.getComponents()) {
+                    if (comp instanceof JPanel) {
+                        for (Component sub : ((JPanel) comp).getComponents()) {
+                            if (sub instanceof JPanel) {
+                                for (Component btn : ((JPanel) sub).getComponents()) {
+                                    if (btn instanceof JButton) {
+                                        JButton b = (JButton) btn;
+                                        if (b.getText().equals(fullSpaceId)) {
+                                            updateButtonState(targetSpace, b);
+                                        }
+                                    }
+                                }
                             }
                         }
-                        
-                        JOptionPane.showMessageDialog(this, "Space " + (idx + 1) + " toggled.");
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Invalid space number.");
                     }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Invalid input.");
                 }
-            });
-        
-            panel.add(Box.createVerticalStrut(10));
-            panel.add(disableAllBtn);
-            panel.add(Box.createVerticalStrut(5));
-            panel.add(enableAllBtn);
-            panel.add(Box.createVerticalStrut(5));
-            panel.add(toggleOneBtn);
-        
-            panel.add(Box.createVerticalStrut(10));
-            panel.add(managerApprovalBtn);
+
+                JOptionPane.showMessageDialog(GUI.this, "Toggled space " + fullSpaceId);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(GUI.this, "Invalid number format.");
+            }
         }
+    });
+
+    panel.add(Box.createVerticalStrut(10));
+    panel.add(disableAllBtn);
+    panel.add(Box.createVerticalStrut(5));
+    panel.add(enableAllBtn);
+    panel.add(Box.createVerticalStrut(5));
+    panel.add(toggleOneBtn);
+    panel.add(Box.createVerticalStrut(10));
+    panel.add(managerApprovalBtn);
+}
+
+        
 
         if ("superadmin".equalsIgnoreCase(currentUser.getEmail())) {
             JButton superManagerBtn = new JButton("Super Manager Dashboard");
@@ -384,73 +467,56 @@ public class GUI extends JFrame {
         return panel;
     }
 
-    private JPanel createBookingPanel() {
+    private JPanel createBookingPanel(String lotName) {
         JPanel panel = new JPanel(new BorderLayout());
 
-        JLabel title = new JLabel("Parking Booking", SwingConstants.CENTER);
+        JLabel title = new JLabel("Booking: " + lotName + " Lot", SwingConstants.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 18));
         panel.add(title, BorderLayout.NORTH);
 
-        ParkingLot parkingLot = new ParkingLot("Main Lot");
         JPanel parkingGrid = new JPanel(new GridLayout(10, 10, 5, 5));
         panel.add(parkingGrid, BorderLayout.CENTER);
 
         JButton backToDashboard = new JButton("Back to Dashboard");
         panel.add(backToDashboard, BorderLayout.SOUTH);
 
+        ParkingLot lot = new ParkingLot(lotName);
         for (int i = 1; i <= 100; i++) {
-            ParkingSpace space = new ParkingSpace(parkingLot, "Space " + i);
-            allSpaces.add(space); // Track each parking space
+            String spaceId = lotName.substring(0, 1).toUpperCase() + i;  // e.g., N55
+            ParkingSpace space = new ParkingSpace(lot, spaceId);
+            allSpaces.add(space);
             JButton spaceButton = new JButton(space.getspace_Location());
-
             updateButtonState(space, spaceButton);
-            int bookingId = i;
 
+            int bookingId = i;
             spaceButton.addActionListener(e -> {
                 if (space.getState() instanceof VacantState) {
                     if (currentUser.getBooking() != null) {
-                        JOptionPane.showMessageDialog(this, "You already have a booking!", "Error",
-                                JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "You already have a booking!");
                         return;
                     }
-
                     try {
-                        String licensePlate = JOptionPane.showInputDialog(this,
-                                "Enter your license plate:\n(Must be 2–10 characters: A-Z, 0-9, dashes or spaces)");
-                        if (licensePlate == null || licensePlate.trim().isEmpty()) {
-                            JOptionPane.showMessageDialog(this, "License plate is required.");
-                            return;
-                        }
-                        if (!licensePlate.matches("^[A-Z0-9\\- ]{2,10}$")) {
-                            JOptionPane.showMessageDialog(this, "Invalid license plate format.");
-                            return;
-                        }
+                        String licensePlate = JOptionPane.showInputDialog(this, "Enter license plate:");
+                        if (licensePlate == null || licensePlate.trim().isEmpty()) return;
 
                         Booking booking = new Booking();
                         booking.setId(bookingId);
-                        Date start = new Date();
-                        booking.setStartTime(start);
-                        //  Set end time to 1 hour later by default
-                        booking.setExitTime(new Date(start.getTime() + 60L * 60 * 1000));
-
+                        booking.setStartTime(new Date());
+                        booking.setExitTime(new Date(booking.getStartTime().getTime() + 60L * 60 * 1000));
                         booking.setBookedSpace(space);
                         booking.setLicensePlate(licensePlate);
 
-                        BookParking bookParking = new BookParking(booking, space, currentUser.getEmail());
-                        bookParking.execute();
+                        BookParking command = new BookParking(booking, space, currentUser.getEmail());
+                        command.execute();
 
                         currentUser.setBooking(booking);
                         space.setState(new OccupiedState(space));
                         updateButtonState(space, spaceButton);
-                        updateBookingInfoLabelFromOutside();
-                        JOptionPane.showMessageDialog(this, "Booked " + space.getspace_Location());
+                        JOptionPane.showMessageDialog(this, "Booked: " + space.getspace_Location());
                     } catch (IOException ex) {
                         ex.printStackTrace();
-                        JOptionPane.showMessageDialog(this, "Booking failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, "Booking failed.");
                     }
-                } else {
-                    JOptionPane.showMessageDialog(this, "This space is already booked!", "Error",
-                            JOptionPane.ERROR_MESSAGE);
                 }
             });
 
@@ -458,8 +524,6 @@ public class GUI extends JFrame {
         }
 
         backToDashboard.addActionListener(e -> cardLayout.show(mainPanel, "dashboard"));
-        backToDashboard.addActionListener(e -> cardLayout.show(mainPanel, "dashboard"));
-
         return panel;
     }
 
@@ -726,7 +790,19 @@ private boolean validateCardFull(String inputCardNumber, String inputExp, String
                     Booking b = new Booking();
                     b.setId(Integer.parseInt(reader.get(0).trim()));
                     b.setStartTime(new Date(reader.get(1).trim()));
-                    b.setBookedSpace(new ParkingSpace(new ParkingLot("Main Lot"), reader.get(2).trim()));
+                    String fullSpaceId = reader.get(2).trim(); // e.g., "N55"
+                    String lotInitial = fullSpaceId.substring(0, 1);
+                    String lotName;
+                    
+                    switch (lotInitial) {
+                        case "N": lotName = "North"; break;
+                        case "S": lotName = "South"; break;
+                        case "E": lotName = "East"; break;
+                        case "W": lotName = "West"; break;
+                        default: lotName = "Unknown";
+                    }
+                    
+                    b.setBookedSpace(new ParkingSpace(new ParkingLot(lotName), fullSpaceId));                    
                     b.setLicensePlate(reader.get(3).trim());
                     b.setExitTime(new Date(b.getStartTime().getTime() + 60L * 60 * 1000)); // assume 1 hour
                     return b;

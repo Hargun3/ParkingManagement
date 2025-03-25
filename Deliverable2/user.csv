@@ -1,8 +1,8 @@
 id,email,password,role,status
 1,t1@yorku.ca,t1t1,Student,approved
 2,t2@yorku.ca,t2t2,Faculty,approved
-3,t3@yorku.ca,t3t3,Staff,pending
-123,test@gmail.com,Hargun@2003,Student,pendingtest
+3,t3@yorku.ca,t3t3,Staff,approved
+123,test@gmail.com,Hargun@2003,Student,pending
 124,Manager2,iLr4dnu_kuJx,Manager,approved
 125,Manager1,BlT9$88#6lzU,Manager,approved
 126,Manager4,D@7WYMjv9HfF,Manager,approved
@@ -24,3 +24,9 @@ id,email,password,role,status
 141,Manager2,v4)BiyoWxobd,Manager,approved
 142,Manager4,P!@tGgwIlbA%,Manager,approved
 143,Manager3,JgO9+XO7Ml0g,Manager,approved
+1742917334,test1@yorku.ca,Hargun@2003,Student,approved
+1742918261,yaya@yorku.ca,Test@123,Student,pending
+1742918261,yaya@yorku.ca,Test@123,Student,pending
+1742918326,testingigngi@yorku.ca,Test@20003,Student,pending
+1742918326,testingigngi@yorku.ca,Test@20003,Student,pending
+1742919391,ttttt@yroku.ca,t1t1t1@2330AA,Student,pending

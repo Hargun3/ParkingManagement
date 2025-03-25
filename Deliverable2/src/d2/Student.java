@@ -69,11 +69,11 @@ public class Student implements Client {
                 String status = reader.get("status").trim();
                 String storedId = reader.get("id").trim();
 
-                // ✅ Print debug info
+                //  Print debug info
                 System.out.println("Checking user: " + storedEmail + " | Role: " + storedRole + " | Status: " + status);
                 System.out.println("Input Email: " + email + " | Input Password: " + password);
 
-                // ✅ Bypass approval for SuperManager
+                //  Bypass approval for SuperManager
                 if (!status.equalsIgnoreCase("approved")) {
                     if (!storedRole.equalsIgnoreCase("SuperManager")) {
                         System.out.println("? Account not yet approved by management.");

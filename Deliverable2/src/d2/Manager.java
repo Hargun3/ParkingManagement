@@ -7,13 +7,13 @@ public class Manager implements Client {
     private String email;
     private String password;
 
-    // ✅ Constructor used by AccountGenerator when creating managers
+    //  Constructor used by AccountGenerator when creating managers
     public Manager(String email, String password) {
         this.email = email;
         this.password = password;
     }
 
-    // ✅ Default constructor (required for login system that does new Manager())
+    //  Default constructor (required for login system that does new Manager())
     public Manager() {
     }
 
