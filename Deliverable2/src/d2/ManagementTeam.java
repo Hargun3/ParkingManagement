@@ -17,9 +17,10 @@ public class ManagementTeam {
         return client_Role.equals(clientID_To_Role.get(client_ID));
     }
 
-    public Car getCarInfoFromSpace(ParkingSpace space) {
+    public Car getCarInfoFromSpace(ParkingSpace space, Car car) { 
         Sensor sensor = new Sensor(space);
-        return sensor.scanCarInfo(sensor.getCurrentCar());
+        return sensor.scanCarInfo(car);
+
     }
 
     public boolean addParkingLot(ParkingLot lot) {
